@@ -20,6 +20,7 @@ int main(int argc, char *argv[])
     ////////////////////////////////////////////////////////////固定模板
     ///////////////////////////////////////////////////////////////////
     Shader::dirName = argv[1];
+    // Shader::dirName = "src/03_Texture/";
     glfwInit();
     if (!glfwInit())
     {
@@ -30,6 +31,7 @@ int main(int argc, char *argv[])
     // 配置GLFW以使用OpenGL 3.3核心剖面
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     GLFWwindow *window = glfwCreateWindow(width, height, "Texture", nullptr, nullptr);
     if (!window)
     {
