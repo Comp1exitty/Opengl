@@ -19,8 +19,8 @@ int main(int argc, char *argv[])
 {
     ////////////////////////////////////////////////////////////固定模板
     ///////////////////////////////////////////////////////////////////
-    Shader::dirName = argv[1];
-    // Shader::dirName = "src/03_Texture/";
+    // Shader::dirName = argv[1];
+    Shader::dirName = "src/03_Texture/";
     glfwInit();
     if (!glfwInit())
     {
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
     // 解除顶点数组VAO绑定
     glBindVertexArray(0);
 
-    // 生成纹理
+    // 生成纹理1
     unsigned int texture1, texture2;
     glGenTextures(1, &texture1);
     glBindTexture(GL_TEXTURE_2D, texture1);
@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
     }
     stbi_image_free(data);
     glBindTexture(GL_TEXTURE_2D, 0);
-
+    // 生成纹理2
     glGenTextures(1, &texture2);
     glBindTexture(GL_TEXTURE_2D, texture2);
 
