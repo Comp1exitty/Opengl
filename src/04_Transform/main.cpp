@@ -1,5 +1,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <tool/shader.h>
 #include <iostream>
 
@@ -20,7 +25,8 @@ int main(int argc, char *argv[])
     ////////////////////////////////////////////////////////////固定模板
     ///////////////////////////////////////////////////////////////////
     // Shader::dirName = argv[1];
-    Shader::dirName = "src/03_Texture/";
+    Shader::dirName = "src/04_Transform/";
+    // Shader::dirName = "src/03_Texture/";
     glfwInit();
     if (!glfwInit())
     {
@@ -32,7 +38,7 @@ int main(int argc, char *argv[])
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    GLFWwindow *window = glfwCreateWindow(width, height, "Texture", nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(width, height, "Transform", nullptr, nullptr);
     if (!window)
     {
         glfwTerminate();
@@ -128,7 +134,7 @@ int main(int argc, char *argv[])
 
     // 加载图片
     data = stbi_load("./static/texture/awesomeface.png", &width, &height, &nrChannels, 0);
-    
+
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
@@ -139,6 +145,14 @@ int main(int argc, char *argv[])
     ourShader.use();
     ourShader.setInt("texture1", 0);
     ourShader.setInt("texture2", 1);
+    // // 创建旋转和缩放矩阵
+    // glm::mat4 trans = glm::mat4(1.0f);
+    // trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
+    // trans = glm::rotate(trans, (GLfloat)glfwGetTime() * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    // trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
+    // // 将旋转以及缩放矩阵传递给着色器
+    // GLuint transformLoc = glGetUniformLocation(ourShader.ID, "transform");
+    // glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
     // 渲染循环
     while (!glfwWindowShouldClose(window))
@@ -148,6 +162,16 @@ int main(int argc, char *argv[])
         glClear(GL_COLOR_BUFFER_BIT);
         // 调用着色器
         ourShader.use();
+
+        // 创建旋转和缩放矩阵
+        glm::mat4 trans = glm::mat4(1.0f);
+        trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
+        trans = glm::rotate(trans, (GLfloat)glfwGetTime() * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
+        // 将旋转以及缩放矩阵传递给着色器
+        GLuint transformLoc = glGetUniformLocation(ourShader.ID, "transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
 

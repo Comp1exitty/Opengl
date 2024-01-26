@@ -12,7 +12,7 @@
                 "command": "powershell",
                 "args": [
                     "-c",
-                    "mingw32-make dir=03_Texture"
+                    "mingw32-make dir=04_Transform"
                 ]
             },
             "linux": {
