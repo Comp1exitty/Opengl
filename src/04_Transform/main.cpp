@@ -59,6 +59,8 @@ int main(int argc, char *argv[])
     ///////////////////////////////////////////////////////////////////
     Shader ourShader("./shader/vertex.glsl", "./shader/fragment.glsl");
 
+
+    
     // 设置顶点坐标和颜色
     float vertices[] = {
         //     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
@@ -98,7 +100,7 @@ int main(int argc, char *argv[])
     glBindVertexArray(0);
 
     // 生成纹理
-    unsigned int texture1, texture2;
+    unsigned int texture1, texture2,texture3;
     glGenTextures(1, &texture1);
     glBindTexture(GL_TEXTURE_2D, texture1);
 
@@ -113,15 +115,21 @@ int main(int argc, char *argv[])
 
     // 加载图片
     int width, height, nrChannels;
-    unsigned char *data = stbi_load("./static/texture/container.jpg", &width, &height, &nrChannels, 0);
+    // unsigned char *data = stbi_load("./static/texture/container.jpg", &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load("./static/texture/windmill.png", &width, &height, &nrChannels, 0);
 
     if (data)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
+
     stbi_image_free(data);
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    // 启用混合(针对透明图层)
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glGenTextures(1, &texture2);
     glBindTexture(GL_TEXTURE_2D, texture2);
@@ -142,35 +150,49 @@ int main(int argc, char *argv[])
     }
     stbi_image_free(data);
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    glGenTextures(1, &texture3);
+    glBindTexture(GL_TEXTURE_2D, texture3);
+
+    // 设置环绕和过滤方式
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // 图像y轴翻转
+    stbi_set_flip_vertically_on_load(true);
+
+    // 加载图片
+    data = stbi_load("./static/texture/container.jpg", &width, &height, &nrChannels, 0);
+
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    stbi_image_free(data);
+    glBindTexture(GL_TEXTURE_2D, 0);
     ourShader.use();
     ourShader.setInt("texture1", 0);
     ourShader.setInt("texture2", 1);
-    // // 创建旋转和缩放矩阵
-    // glm::mat4 trans = glm::mat4(1.0f);
-    // trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
-    // trans = glm::rotate(trans, (GLfloat)glfwGetTime() * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    // trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
-    // // 将旋转以及缩放矩阵传递给着色器
-    // GLuint transformLoc = glGetUniformLocation(ourShader.ID, "transform");
-    // glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
     // 渲染循环
     while (!glfwWindowShouldClose(window))
     {
-
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         // 调用着色器
         ourShader.use();
 
-        // 创建旋转和缩放矩阵
+        // 创建旋转和缩放矩阵1
         glm::mat4 trans = glm::mat4(1.0f);
-        trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
-        trans = glm::rotate(trans, (GLfloat)glfwGetTime() * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        trans = glm::translate(trans, glm::vec3(-0.5f, 0.0f, 0.0f));
+        trans = glm::rotate(trans, (GLfloat)glfwGetTime() * glm::radians(180.0f)*-1.0f, glm::vec3(0.0f, 0.0f, 1.0f));
         trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
-        // 将旋转以及缩放矩阵传递给着色器
-        GLuint transformLoc = glGetUniformLocation(ourShader.ID, "transform");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+        // 将旋转以及缩放矩阵1传递给着色器
+        ourShader.setMat4("transform",trans);
+        ourShader.setFloat("transparent",0.0f);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
@@ -179,6 +201,21 @@ int main(int argc, char *argv[])
         glBindTexture(GL_TEXTURE_2D, texture2);
 
         glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        
+        // 创建平移、旋转和缩放矩阵2
+        trans = glm::mat4(1.0f);
+        trans = glm::translate(trans, glm::vec3(0.5f, 0.0f, 0.0f));
+        trans = glm::rotate(trans, (GLfloat)glfwGetTime() * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
+        // 将平移、旋转以及缩放矩阵2传递给着色器
+        ourShader.setMat4("transform",trans);
+        ourShader.setFloat("transparent", 0.2f);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture3);
+
+        // 绘制第二个图形
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
